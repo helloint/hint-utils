@@ -1,5 +1,7 @@
 @echo off
 
+:: This is an automation of the way in https://spblog.net/post/2020/06/10/how-to-effectively-delete-node-modules-on-windows
+
 echo Get Admin Authorization...
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
@@ -27,12 +29,12 @@ set scriptName=%SystemRoot%\fast-del.bat
 echo @ECHO OFF > %scriptName%
 echo SET FOLDER=%%1 >> %scriptName%
 echo IF [%%1]==[] ( >> %scriptName%
-echo 	ECHO É¾³ýÎÄ¼þ¼Ð: "%%CD%%"? >> %scriptName%
+echo 	ECHO åˆ é™¤æ–‡ä»¶å¤¹: "%%CD%%"? >> %scriptName%
 echo 	PAUSE >> %scriptName%
 echo 	SET FOLDER="%%CD%%" >> %scriptName%
 echo 	CD / >> %scriptName%
 echo ) >> %scriptName%
-echo ECHO ÕýÔÚÉ¾³ý %%FOLDER%% >> %scriptName%
+echo ECHO æ­£åœ¨åˆ é™¤ %%FOLDER%% >> %scriptName%
 echo rimraf %%FOLDER%% >> %scriptName%
 echo Done
 
@@ -40,8 +42,8 @@ echo Add command to right click menu...
 set regName=Add_Fast_Delete.reg
 echo Windows Registry Editor Version 5.00 > %regName%
 echo  >> %regName%
-echo ;Ìí¼ÓÓÒ¼ü²Ëµ¥ >> %regName%
-echo [HKEY_CLASSES_ROOT\Directory\shell\¿ìËÙÉ¾³ý\command] >> %regName%
+echo ;æ·»åŠ å³é”®èœå• >> %regName%
+echo [HKEY_CLASSES_ROOT\Directory\shell\å¿«é€Ÿåˆ é™¤\command] >> %regName%
 echo ""="cmd /c \"cd /d %%1 ^&^& fast-del.bat\""  >> %regName%
 reg import "%regName%"
 del %regName%
