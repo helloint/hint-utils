@@ -1,7 +1,13 @@
 # Switch DNS
-You might always need to CMD file: One to Enable DNS and another to Disable DNS (Reset).  
-For example, if you need to enable DNS at home and disable DNS in the office,
-just rename `set-dns.bat` to `home.bat` and `office.bat`, then in `home.bat`, keep:
+Switch Network Adaptor DNS by One-Click.
+
+## Who Needs It
+If you always need to set/reset DNS to your network adaptor between home and the office, this tool will save your life.  
+
+## How To Use
+You will need 2 `bat` files: One to Enable DNS and the other to Disable DNS (Reset).  
+1. Download `set-dns.bat` and rename to `home.bat` and `office.bat`.  
+2. In `home.bat`, keep:
 ```
 netsh interface ipv4 set dns name="以太网" source=static addr=8.8.8.8 register=PRIMARY
 ```
