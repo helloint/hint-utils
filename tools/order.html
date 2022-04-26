@@ -35,6 +35,7 @@
                 var currHomeNum = null;    //上一个户号 用户比较商品
                 var currHomeIndex = null;    //上一个户号 所在位置
                 var currTotal = []; //单品累计和
+                var isNewBuild = false;
                 input.forEach((row, i) => {
                     if (i !== 0) {
                         var order = row.split('\t');
@@ -58,8 +59,9 @@
                             currBuildNum = order[0];
                             currBuildIndex = result.length;
                             currTotal = [];
+                            isNewBuild = true;
                         }
-                        if (order[1] !== currHomeNum) {
+                        if (order[1] !== currHomeNum || isNewBuild) {
                             // 非同户的，新建空记录
                             record = new Array((products.length + 1) * 2).fill('');
                             record[0] = currBuildNum;
@@ -71,8 +73,8 @@
                             currHomeIndex = result.length - 1;
                         } else {
                             // 同户，只更新/累加单品数量
-                            var lastNum = parseInt(result[currHomeIndex][2 + products.length + products.indexOf(order[2])], 10) ? result[currHomeIndex][2 + products.length + products.indexOf(order[2])] : 0;
-                            result[currHomeIndex][2 + products.length + products.indexOf(order[2])] = lastNum + order[3];
+                            var lastNum = parseInt(result[currHomeIndex][2 + products.length + products.indexOf(order[2])], 10) ? parseInt(result[currHomeIndex][2 + products.length + products.indexOf(order[2])]) : 0;
+                            result[currHomeIndex][2 + products.length + products.indexOf(order[2])] = lastNum + parseInt(order[3], 10);
                         }
 
                         // 累加楼栋单品总数
@@ -88,6 +90,8 @@
                                 });
                             }
                         }
+
+                        isNewBuild = false;
                     }
                 });
             } else {
