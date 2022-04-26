@@ -30,12 +30,12 @@
                 // 1. 根据商品出现顺序，生成商品数组 ['原味','优倍','致优']
                 // 2. 把记录处理成：楼号 单品总数量(每栋楼第一条记录有数据) 室号 单品数量
                 result.push(['楼号',...productsTotalTitle,'室号',...productsTitle]);
-                var currBuildNum = null;    //当前楼栋号
-                var currBuildIndex = null;    //当前楼栋号第一条记录所在位置
+                var currUnitNum = null;    //当前楼栋号
+                var currUnitIndex = null;    //当前楼栋号第一条记录所在位置
                 var currHomeNum = null;    //上一个户号 用户比较商品
                 var currHomeIndex = null;    //上一个户号 所在位置
                 var currTotal = []; //单品累计和
-                var isNewBuild = false;
+                var isNewUnit = false;
                 input.forEach((row, i) => {
                     if (i !== 0) {
                         var order = row.split('\t');
@@ -48,23 +48,23 @@
                         order[1 + products.length] 室号
                         order[2 + products.length + products.length + products.indexOf(order[2])] 单品数量
                          */
-                        if (order[0] !== currBuildNum) {
+                        if (order[0] !== currUnitNum) {
                             // 写入上一个楼号的综合数据
-                            if (currBuildNum != null) {
+                            if (currUnitNum != null) {
                                 products.forEach((product, idx)=>{
-                                    result[currBuildIndex][idx + 1] = currTotal[idx];
+                                    result[currUnitIndex][idx + 1] = currTotal[idx];
                                 });
                             }
 
-                            currBuildNum = order[0];
-                            currBuildIndex = result.length;
+                            currUnitNum = order[0];
+                            currUnitIndex = result.length;
                             currTotal = [];
-                            isNewBuild = true;
+                            isNewUnit = true;
                         }
-                        if (order[1] !== currHomeNum || isNewBuild) {
+                        if (order[1] !== currHomeNum || isNewUnit) {
                             // 非同户的，新建空记录
                             record = new Array((products.length + 1) * 2).fill('');
-                            record[0] = currBuildNum;
+                            record[0] = currUnitNum;
                             record[1 + products.length] = order[1];
                             record[2 + products.length + products.indexOf(order[2])] = order[3];
                             result.push(record);
@@ -84,14 +84,14 @@
                         // 最后一个为空字符串
                         if (i === input.length - 1) {
                             // 写入上一个楼号的综合数据
-                            if (currBuildNum != null) {
+                            if (currUnitNum != null) {
                                 products.forEach((product, idx)=>{
-                                    result[currBuildIndex][idx + 1] = currTotal[idx];
+                                    result[currUnitIndex][idx + 1] = currTotal[idx];
                                 });
                             }
                         }
 
-                        isNewBuild = false;
+                        isNewUnit = false;
                     }
                 });
             } else {
