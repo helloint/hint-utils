@@ -3,11 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>订单处理</title>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script>
         function process() {
             // 约定输入的数据格式必须是：楼号\t室号\t商品\t数量\t跟团
             var input = $('#input').val().trim().split('\n');
+
+            // 按楼号室号排序
+            var title = input.shift();
+            input.sort((a, b) => {
+                var aa = a.split('\t');
+                var bb = b.split('\t');
+                return parseInt(aa[0], 10) === parseInt(bb[0], 10) ?
+                    parseInt(aa[1], 10) - parseInt(bb[1], 10) : parseInt(aa[0], 10) - parseInt(bb[0], 10)
+            });
+            input.unshift(title);
+
             var result = [];
             var products = [];  // 所有商品
             var productsTitle = [];
@@ -17,19 +29,18 @@
                     var item = row.split('\t');
                     if (!products.includes(item[2])) {
                         products.push(item[2]);
-                        productsTitle.push(item[2].substring(0,2));
-                        productsTotalTitle.push('总' + item[2].substring(0,1));
+                        productsTitle.push(item[2].substring(0, 2));
+                        productsTotalTitle.push('总' + item[2].substring(0, 1));
                     }
                 }
             });
 
             /*
-            判断商品数量，分单件商品和多件商品
-            假设数据都是已经排序过了的 TODO: 做一次排序？
+            处理方法：
+            1. 根据商品出现顺序，生成商品数组 ['原味','优倍','致优']
+            2. 把记录处理成：楼号 单品总数量(每栋楼第一条记录有数据) 室号 单品数量
              */
-            // 1. 根据商品出现顺序，生成商品数组 ['原味','优倍','致优']
-            // 2. 把记录处理成：楼号 单品总数量(每栋楼第一条记录有数据) 室号 单品数量
-            result.push(['楼号',...productsTotalTitle,'室号',...productsTitle]);
+            result.push(['楼号', ...productsTotalTitle, '室号', ...productsTitle]);
             var currUnitNum = null;    //当前楼栋号
             var currUnitIndex = null;    //当前楼栋号第一条记录所在位置
             var currHomeNum = null;    //上一个户号 用户比较商品
@@ -51,7 +62,7 @@
                     if (order[0] !== currUnitNum) {
                         // 写入上一个楼号的综合数据
                         if (currUnitNum != null) {
-                            products.forEach((product, idx)=>{
+                            products.forEach((product, idx) => {
                                 result[currUnitIndex][idx + 1] = currTotal[idx];
                             });
                         }
@@ -85,7 +96,7 @@
                     if (i === input.length - 1) {
                         // 写入上一个楼号的综合数据
                         if (currUnitNum != null) {
-                            products.forEach((product, idx)=>{
+                            products.forEach((product, idx) => {
                                 result[currUnitIndex][idx + 1] = currTotal[idx];
                             });
                         }
@@ -108,7 +119,8 @@
 </head>
 <body>
 <textarea id="input" rows="10" cols="50" placeholder="把已经做过楼号室号排序的Excel表单内容粘贴到这里……"></textarea><br/>
-<button id="process" onclick="process();">处理</button><br/>
+<button id="process" onclick="process();">处理</button>
+<br/>
 <textarea id="output" rows="10" cols="50" placeholder="点击【处理】，结果会显示在此处，并自动复制到剪贴板，可以直接粘贴到Excel"></textarea>
 </body>
 </html>
