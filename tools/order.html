@@ -9,6 +9,7 @@
         function process() {
             // 约定输入的数据格式必须是：楼号\t室号\t商品\t数量\t跟团
             var input = $('#input').val().trim().split('\n');
+            var showZero = $('#showZero').prop('checked');
 
             // 按楼号室号排序
             var title = input.shift();
@@ -22,8 +23,8 @@
 
             var result = [];
             var products = [];  // 所有商品
-            var productsTitle = [];
-            var productsTotalTitle = [];
+            var productsTitle = []; // 商品标题
+            var productsTotalTitle = []; // 显示在汇总拦的商品标题
             input.forEach((row, i) => {
                 if (i !== 0) {
                     var item = row.split('\t');
@@ -69,7 +70,7 @@
 
                         currUnitNum = order[0];
                         currUnitIndex = result.length;
-                        currTotal = [];
+                        currTotal = showZero ? new Array(products.length).fill(0) : [];
                         isNewUnit = true;
                     }
                     if (order[1] !== currHomeNum || isNewUnit) {
@@ -120,6 +121,8 @@
 <body>
 <textarea id="input" rows="10" cols="50" placeholder="把已经做过楼号室号排序的Excel表单内容粘贴到这里……"></textarea><br/>
 <button id="process" onclick="process();">处理</button>
+<input type="checkbox" id="showZero">
+<label class="text" for="showZero">显零</label>
 <br/>
 <textarea id="output" rows="10" cols="50" placeholder="点击【处理】，结果会显示在此处，并自动复制到剪贴板，可以直接粘贴到Excel"></textarea>
 </body>
