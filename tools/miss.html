@@ -7,16 +7,54 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"
             integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script>
+        var TYPES = {
+            ESTATE: '1',
+            UNIT: '2',
+        }
+        function init() {
+            var type = getCookie('type');
+            $('input[name=type]').filter('[value=' + type + ']').attr('checked', true);
+            if (type === TYPES.ESTATE) {
+                $('#estateOptions').show();
+                $('#unitOptions').hide();
+            } else {
+                $('#estateOptions').hide();
+                $('#unitOptions').show();
+            }
+            $('input[name=type]').click(function () {
+                var type = $('input[name=type]:checked').val();
+                setCookie('type', type);
+                if (type === TYPES.ESTATE) {
+                    $('#estateOptions').show();
+                    $('#unitOptions').hide();
+                } else {
+                    $('#estateOptions').hide();
+                    $('#unitOptions').show();
+                }
+            });
+            ['maxUnit', 'skippedUnit', 'maxFloor', 'maxRoom', 'skippedRoom'].forEach(id => {
+                if (getCookie(id)) {
+                    $('#' + id).val(getCookie(id));
+                }
+                $('#' + id).on('change keyup paste', (e) => {
+                        setCookie(id, $('#' + id).val());
+                    });
+            })
+        }
+
         function process() {
-            // 约定输入的数据格式必须是：楼号\t室号\t商品\t数量\t跟团
             var input = $('#input').val().trim().split('\n');
+            var type = $('input[name=type]:checked').val();
             var regex = /(\d+)[另 ]?号/;
+            var allNums = getAllNums(type);
+            if (type === TYPES.UNIT) {
+                regex = /(\d+0\d)/;
+            }
             var result = [];
             var missing = [];
             var skipped = [];
-            var allNums = $('#allNums').val().split(',');
             input.forEach((row, i) => {
-                if (row.includes('楼') || row.includes('号')) {
+                if (row.includes('.')) {
                     var numResult = row.match(regex);
                     if (numResult) {
                         result.push(numResult[1]);
@@ -34,24 +72,86 @@
                     missing.push(num);
                 }
             });
-            var output = [];
-            missing.forEach((item) => {
-                output.push(item + '号楼');
-                console.log(item + '号楼');
-            });
-            output.push('请以上楼栋尽快提交检测结果！');
-            $('#output').val(output.join('\n'));
+            var output = '厉害厉害，全部提交！';
+            if (missing.length !== 0) {
+                output = missing.join(', ') + (type === TYPES.ESTATE ? ' 号楼' : '') + ' 未提交检测结果';
+            }
+            $('#output').val(output);
             $('#output').select();
             $('#skipped').val(skipped.join('\n'));
+        }
+
+        function copyResult() {
             navigator.clipboard.writeText($('#output').val());
+        }
+
+        function getAllNums(type) {
+            var ret = [];
+            if (type === TYPES.ESTATE) {
+                var maxUnit = $('#maxUnit').val();
+                var skippedUnit = $('#skippedUnit').val().split(',');
+                for (var i = 1; i <= maxUnit; i++) {
+                    if (!skippedUnit.includes(i + '')) {
+                        ret.push(i + '');
+                    }
+                }
+            } else {
+                var maxFloor = $('#maxFloor').val();
+                var maxRoom = $('#maxRoom').val();
+                var skippedRoom = $('#skippedRoom').val().split(',');
+                for (var i = 1; i <= maxFloor; i++) {
+                    for (var j = 1; j <= maxRoom; j++) {
+                        var roomNum = i + '0' + j;
+                        if (!skippedRoom.includes(roomNum)) {
+                            ret.push(roomNum);
+                        }
+                    }
+                }
+            }
+            return ret;
+        }
+    </script>
+    <script>
+        function setCookie(name, value, days) {
+            var expires = "";
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
         }
     </script>
 </head>
-<body>
+<body onload="init()">
 <textarea id="input" rows="10" cols="50" placeholder="把楼栋接龙数据复制到这里……"></textarea><br/>
-<button id="process" onclick="process();">谁没提交！</button>
-<label for="allNums">有效楼栋号：</label><input type="text" id="allNums" value="1,2,3,4,5,6,7,8,9,12,14,15,16,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32">
-<br/>
+<div>统计类型：<br/>
+    <input type="radio" id="forEstate" name="type" value="1"><label for="forEstate">全小区（防疫志愿者用）</label><br/>
+    <input type="radio" id="forUnit" name="type" value="2" checked><label for="forUnit">单楼栋（楼组长用）</label></div>
+<div id="estateOptions" style="display: none;">
+    <label for="maxUnit">最大楼号：</label><input type="text" id="maxUnit" value="32"><br/>
+    <label for="skippedUnit">排除的楼：</label><input type="text" id="skippedUnit" value="10,11,13,17">
+</div>
+<div id="unitOptions">
+    <label for="maxFloor">最大楼层：</label><input type="text" id="maxFloor" value="11"><br/>
+    <label for="maxRoom">最大户号：</label><input type="text" id="maxRoom" value="2"><br/>
+    <label for="skippedRoom">排除的户：</label><input type="text" id="skippedRoom" value="402">
+</div>
+<div>
+    <button id="process" onclick="process();">谁没提交！</button>
+    <button id="copy" onclick="copyResult();">复制结果</button>
+</div>
 <textarea id="output" rows="10" cols="50" placeholder="点击【谁没提交！】，没提交的会显示在这里"></textarea>
 <br/>
 <textarea id="skipped" rows="10" cols="50" placeholder="无效数据会显示在这里，备查"></textarea>
