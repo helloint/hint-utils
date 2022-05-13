@@ -32,7 +32,7 @@
                     $('#unitOptions').show();
                 }
             });
-            ['maxUnit', 'skippedUnit', 'maxFloor', 'maxRoom', 'skippedRoom'].forEach(id => {
+            ['maxUnit', 'skippedUnit2', 'maxFloor', 'maxRoom', 'skippedRoom'].forEach(id => {
                 if (getCookie(id)) {
                     $('#' + id).val(getCookie(id));
                 }
@@ -89,9 +89,9 @@
             var ret = [];
             if (type === TYPES.ESTATE) {
                 var maxUnit = $('#maxUnit').val();
-                var skippedUnit = $('#skippedUnit').val().split(',');
+                var skippedUnit2 = $('#skippedUnit2').val().split(',');
                 for (var i = 1; i <= maxUnit; i++) {
-                    if (!skippedUnit.includes(i + '')) {
+                    if (!skippedUnit2.includes(i + '')) {
                         ret.push(i + '');
                     }
                 }
@@ -141,7 +141,7 @@
     <input type="radio" id="forUnit" name="type" value="2" checked><label for="forUnit">单楼栋（楼组长用）</label></div>
 <div id="estateOptions" style="display: none;">
     <label for="maxUnit">最大楼号：</label><input type="text" id="maxUnit" value="32"><br/>
-    <label for="skippedUnit">排除的楼：</label><input type="text" id="skippedUnit" value="10,11,13,17">
+    <label for="skippedUnit2">排除的楼：</label><input type="text" id="skippedUnit2" value="10,11,13,27">
 </div>
 <div id="unitOptions">
     <label for="maxFloor">最大楼层：</label><input type="text" id="maxFloor" value="11"><br/>
