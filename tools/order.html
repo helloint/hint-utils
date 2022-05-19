@@ -8,7 +8,7 @@
     <script>
         function process() {
             // 约定输入的数据格式必须是：楼号\t室号\t商品\t数量\t跟团
-            var input = $('#input').val().trim().split('\n');
+            var input = $('#input').val().trim().replace(/ */g, '').split('\n');
             var showZero = $('#showZero').prop('checked');
 
             // 按楼号室号排序
