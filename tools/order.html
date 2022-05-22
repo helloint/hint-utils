@@ -10,7 +10,7 @@
         function process() {
             // 约定输入的数据格式必须是：楼号\t室号\t商品\t数量\t跟团
             var input = $('#input').val().trim().replace(/ */g, '').split('\n');
-            var showZero = $('#showZero').prop('checked');
+            var onlyUnit = $('#onlyUnit').prop('checked');
 
             // 按楼号室号排序
             var title = input.shift();
@@ -42,7 +42,11 @@
             1. 根据商品出现顺序，生成商品数组 ['原味','优倍','致优']
             2. 把记录处理成：楼号 单品总数量(每栋楼第一条记录有数据) 室号 单品数量
              */
-            result.push(['楼号', ...productsTotalTitle, '室号', ...productsTitle]);
+            if (!onlyUnit) {
+                result.push(['楼号', ...productsTotalTitle, '室号', ...productsTitle]);
+            } else {
+                result.push(['楼号', ...productsTotalTitle]);
+            }
             var currUnitNum = null;    //当前楼栋号
             var currUnitIndex = null;    //当前楼栋号第一条记录所在位置
             var currHomeNum = null;    //上一个户号 用户比较商品
@@ -71,20 +75,24 @@
 
                         currUnitNum = order[0];
                         currUnitIndex = result.length;
-                        currTotal = showZero ? new Array(products.length).fill(0) : [];
+                        currTotal = [];
                         isNewUnit = true;
                     }
                     if (order[1] !== currHomeNum || isNewUnit) {
                         // 非同户的，新建空记录
-                        record = new Array((products.length + 1) * 2).fill('');
+                        record = new Array((products.length + 1) * (onlyUnit ? 1 : 2)).fill('');
                         record[0] = currUnitNum;
-                        record[1 + products.length] = order[1];
-                        record[2 + products.length + products.indexOf(order[2])] = order[3];
-                        result.push(record);
+                        if (!onlyUnit) {
+                            record[1 + products.length] = order[1];
+                            record[2 + products.length + products.indexOf(order[2])] = order[3];
+                            result.push(record);
+                        } else if (isNewUnit) {
+                            result.push(record);
+                        }
 
                         currHomeNum = order[1];
                         currHomeIndex = result.length - 1;
-                    } else {
+                    } else if (!onlyUnit) {
                         // 同户，只更新/累加单品数量
                         var lastNum = parseInt(result[currHomeIndex][2 + products.length + products.indexOf(order[2])], 10) ? parseInt(result[currHomeIndex][2 + products.length + products.indexOf(order[2])]) : 0;
                         result[currHomeIndex][2 + products.length + products.indexOf(order[2])] = lastNum + parseInt(order[3], 10);
@@ -122,8 +130,8 @@
 <body>
 <textarea id="input" rows="10" cols="50" placeholder="把已经做过楼号室号排序的Excel表单内容粘贴到这里……"></textarea><br/>
 <button id="process" onclick="process();">处理</button>
-<input type="checkbox" id="showZero">
-<label class="text" for="showZero">显零</label>
+<input type="checkbox" id="onlyUnit">
+<label class="text" for="onlyUnit">仅分装单</label>
 <br/>
 <textarea id="output" rows="10" cols="50" placeholder="点击【处理】，结果会显示在此处，并自动复制到剪贴板，可以直接粘贴到Excel"></textarea>
 </body>
